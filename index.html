@@ -1,0 +1,485 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>UPI App Detector</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"/>
+  <style>
+    :root {
+      --bg:       #07090f;
+      --surface:  #0e1117;
+      --border:   #1c2030;
+      --muted:    #3a4160;
+      --text:     #dde3f5;
+      --sub:      #6b748f;
+      --gold:     #f5a623;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Sora', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2.5rem 1.5rem 4rem;
+      overflow-x: hidden;
+    }
+
+    /* ── Background grid ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; }
+
+    /* ── Header ── */
+    header { text-align: center; margin-bottom: 3rem; }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      background: rgba(245,166,35,.1);
+      border: 1px solid rgba(245,166,35,.25);
+      color: var(--gold);
+      font-size: 0.7rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase;
+      padding: 0.35rem 0.85rem; border-radius: 999px;
+      margin-bottom: 1.2rem;
+    }
+
+    h1 {
+      font-size: clamp(1.9rem, 5vw, 2.8rem);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -.02em;
+      margin-bottom: 0.75rem;
+    }
+    h1 span { color: var(--gold); }
+
+    header p {
+      color: var(--sub);
+      font-size: 0.92rem;
+      max-width: 480px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    /* ── Check All button ── */
+    .actions {
+      display: flex; justify-content: center; gap: 1rem;
+      margin-bottom: 2.5rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      background: var(--gold);
+      color: #07090f;
+      border: none; border-radius: 10px;
+      padding: 0.75rem 2rem;
+      font-family: 'Sora', sans-serif;
+      font-size: 0.9rem; font-weight: 600;
+      cursor: pointer;
+      transition: opacity .2s, transform .1s;
+    }
+    .btn-primary:hover { opacity: .88; }
+    .btn-primary:active { transform: scale(.97); }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--sub);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.75rem 1.5rem;
+      font-family: 'Sora', sans-serif;
+      font-size: 0.9rem; font-weight: 500;
+      cursor: pointer;
+      transition: border-color .2s, color .2s;
+    }
+    .btn-secondary:hover { border-color: var(--muted); color: var(--text); }
+
+    /* ── Summary bar ── */
+    #summary {
+      display: none;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      margin-bottom: 2rem;
+      display: flex;
+      gap: 2rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .stat { text-align: center; }
+    .stat-num { font-size: 1.6rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+    .stat-label { font-size: 0.72rem; color: var(--sub); text-transform: uppercase; letter-spacing: .08em; }
+    .stat-num.found  { color: #4ade80; }
+    .stat-num.absent { color: #f87171; }
+    .stat-num.total  { color: var(--gold); }
+
+    /* ── Grid ── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1rem;
+    }
+
+    /* ── App Card ── */
+    .app-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.4rem;
+      display: flex; flex-direction: column; gap: 1rem;
+      transition: border-color .25s, transform .2s;
+      cursor: default;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .app-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: var(--app-color, transparent);
+      opacity: 0;
+      transition: opacity .3s;
+    }
+
+    .app-card.detected::before,
+    .app-card.missing::before { opacity: 1; }
+    .app-card.missing { --app-color: #f87171; }
+
+    .app-card:hover { transform: translateY(-2px); border-color: var(--muted); }
+
+    /* glow on detect */
+    .app-card.detected {
+      box-shadow: 0 0 0 1px color-mix(in srgb, var(--app-color) 40%, transparent),
+                  0 8px 32px color-mix(in srgb, var(--app-color) 15%, transparent);
+    }
+
+    /* ── Card Top ── */
+    .card-top {
+      display: flex; align-items: center; gap: 0.85rem;
+    }
+
+    .app-icon {
+      width: 48px; height: 48px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+      background: color-mix(in srgb, var(--app-color) 15%, #0e1117);
+      border: 1px solid color-mix(in srgb, var(--app-color) 25%, transparent);
+    }
+
+    .app-info { flex: 1; min-width: 0; }
+    .app-name { font-weight: 600; font-size: 0.95rem; }
+    .app-scheme {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--sub);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      margin-top: 0.2rem;
+    }
+
+    /* ── Status pill ── */
+    .status-pill {
+      font-size: 0.72rem; font-weight: 600;
+      padding: 0.25rem 0.7rem; border-radius: 999px;
+      letter-spacing: .04em;
+      white-space: nowrap;
+    }
+    .status-pill.idle    { background: rgba(255,255,255,.06); color: var(--sub); }
+    .status-pill.checking { background: rgba(245,166,35,.12); color: var(--gold); animation: pulse 1s infinite; }
+    .status-pill.found   { background: rgba(74,222,128,.12); color: #4ade80; }
+    .status-pill.missing { background: rgba(248,113,113,.12); color: #f87171; }
+
+    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.5; } }
+
+    /* ── Check button ── */
+    .check-btn {
+      width: 100%;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--sub);
+      font-family: 'Sora', sans-serif;
+      font-size: 0.82rem; font-weight: 500;
+      padding: 0.6rem;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .check-btn:hover { background: rgba(255,255,255,.04); border-color: var(--muted); color: var(--text); }
+
+    /* ── Open button (shown after detection) ── */
+    .open-btn {
+      display: none;
+      width: 100%;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Sora', sans-serif;
+      font-size: 0.82rem; font-weight: 600;
+      padding: 0.6rem;
+      cursor: pointer;
+      background: color-mix(in srgb, var(--app-color) 80%, #000);
+      color: #fff;
+      transition: opacity .2s;
+    }
+    .open-btn:hover { opacity: .85; }
+    .open-btn.visible { display: block; }
+
+    /* ── Footer note ── */
+    footer {
+      text-align: center;
+      margin-top: 3rem;
+      color: var(--sub);
+      font-size: 0.78rem;
+      line-height: 1.8;
+    }
+    footer code {
+      font-family: 'JetBrains Mono', monospace;
+      background: rgba(255,255,255,.06);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="badge">🇮🇳 UPI Payment Apps</div>
+    <h1>Detect <span>Installed</span><br>PSP Apps</h1>
+    <p>Check which UPI payment apps are installed on this device — instantly redirects if found, or warns you if missing.</p>
+  </header>
+
+  <div class="actions">
+    <button class="btn-primary" onclick="checkAll()">⚡ Check All Apps</button>
+    <button class="btn-secondary" onclick="resetAll()">↺ Reset</button>
+  </div>
+
+  <!-- Summary -->
+  <div id="summary">
+    <div class="stat"><div class="stat-num total" id="s-total">0</div><div class="stat-label">Checked</div></div>
+    <div class="stat"><div class="stat-num found" id="s-found">0</div><div class="stat-label">Installed</div></div>
+    <div class="stat"><div class="stat-num absent" id="s-absent">0</div><div class="stat-label">Not Found</div></div>
+  </div>
+
+  <!-- App Grid -->
+  <div class="grid" id="grid"></div>
+
+  <footer>
+    Detection uses <code>URI scheme</code> + <code>visibilitychange</code> heuristic.<br>
+    Works best on <strong>Android Chrome</strong>. iOS Safari restricts URI scheme auto-firing.<br>
+    On desktop, most schemes will show "Not installed" regardless.
+  </footer>
+
+</div>
+
+<script>
+  // ── App registry ──────────────────────────────────────────────────────────
+  const APPS = [
+    { id: 'phonepe',    name: 'PhonePe',      emoji: '💜', color: '#7B40F2', scheme: 'phonepe://',             storeUrl: 'https://play.google.com/store/apps/details?id=com.phonepe.app' },
+    { id: 'gpay',       name: 'Google Pay',   emoji: '🔵', color: '#4285F4', scheme: 'gpay://',                storeUrl: 'https://play.google.com/store/apps/details?id=com.google.android.apps.nbu.paisa.user' },
+    { id: 'paytm',      name: 'Paytm',        emoji: '💙', color: '#00B9F1', scheme: 'paytmmp://',             storeUrl: 'https://play.google.com/store/apps/details?id=net.one97.paytm' },
+    { id: 'cred',       name: 'CRED',         emoji: '⚫', color: '#D4AF37', scheme: 'cred://',               storeUrl: 'https://play.google.com/store/apps/details?id=com.dreamplug.androidapp' },
+    { id: 'amazonpay',  name: 'Amazon Pay',   emoji: '🟠', color: '#FF9900', scheme: 'amazonpay://',           storeUrl: 'https://play.google.com/store/apps/details?id=in.amazon.mShop.android.shopping' },
+    { id: 'bharatpe',   name: 'BharatPe',     emoji: '🟢', color: '#00875A', scheme: 'bharatpe://',            storeUrl: 'https://play.google.com/store/apps/details?id=com.bharatpe.app' },
+    { id: 'mobikwik',   name: 'MobiKwik',     emoji: '🔷', color: '#2454C0', scheme: 'mobikwik://',            storeUrl: 'https://play.google.com/store/apps/details?id=com.mobikwik_new' },
+    { id: 'freecharge', name: 'FreeCharge',   emoji: '🔴', color: '#E84B3A', scheme: 'freecharge://',          storeUrl: 'https://play.google.com/store/apps/details?id=com.freecharge.android' },
+    { id: 'slice',      name: 'Slice',        emoji: '🍊', color: '#FF5B22', scheme: 'slice://',               storeUrl: 'https://play.google.com/store/apps/details?id=com.slicepay' },
+    { id: 'jupiter',    name: 'Jupiter',      emoji: '🌌', color: '#5B4CF5', scheme: 'jupiter://',             storeUrl: 'https://play.google.com/store/apps/details?id=money.jupiter' },
+    { id: 'whatsapp',   name: 'WhatsApp Pay', emoji: '✅', color: '#25D366', scheme: 'whatsapp://',            storeUrl: 'https://play.google.com/store/apps/details?id=com.whatsapp' },
+    { id: 'airtel',     name: 'Airtel Pay',   emoji: '❤️', color: '#E40000', scheme: 'airtelpeymentsbank://', storeUrl: 'https://play.google.com/store/apps/details?id=com.airtelpeymentsbank' },
+  ];
+
+  // ── State ─────────────────────────────────────────────────────────────────
+  const state = {}; // id → 'idle' | 'checking' | 'found' | 'missing'
+  let checkQueue = [];
+  let isCheckingAll = false;
+
+  // ── Render grid ──────────────────────────────────────────────────────────
+  function renderGrid() {
+    const grid = document.getElementById('grid');
+    grid.innerHTML = APPS.map(app => `
+      <div class="app-card" id="card-${app.id}" style="--app-color: ${app.color}">
+        <div class="card-top">
+          <div class="app-icon">${app.emoji}</div>
+          <div class="app-info">
+            <div class="app-name">${app.name}</div>
+            <div class="app-scheme">${app.scheme}</div>
+          </div>
+          <span class="status-pill idle" id="pill-${app.id}">Idle</span>
+        </div>
+        <button class="check-btn" id="checkbtn-${app.id}" onclick="checkSingle('${app.id}')">
+          Check App
+        </button>
+        <button class="open-btn" id="openbtn-${app.id}" onclick="openApp('${app.id}')">
+          ↗ Open ${app.name}
+        </button>
+      </div>
+    `).join('');
+  }
+
+  // ── Core detection ────────────────────────────────────────────────────────
+  function detectApp(app) {
+    return new Promise((resolve) => {
+      let resolved = false;
+      let appOpened = false;
+
+      const onHide = () => {
+        if (!resolved) {
+          appOpened = true;
+        }
+      };
+
+      const onShow = () => {
+        if (appOpened && !resolved) {
+          resolved = true;
+          document.removeEventListener('visibilitychange', onVisibility);
+          resolve('found');
+        }
+      };
+
+      const onVisibility = () => {
+        if (document.hidden) onHide();
+        else onShow();
+      };
+
+      document.addEventListener('visibilitychange', onVisibility);
+
+      // Fire the URI scheme
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.src = app.scheme;
+      document.body.appendChild(iframe);
+      setTimeout(() => { try { document.body.removeChild(iframe); } catch(e){} }, 1000);
+
+      // Also try direct location (catches more browsers)
+      try { window.location.href = app.scheme; } catch(e) {}
+
+      // Verdict timeout — if page never hid, app not installed
+      setTimeout(() => {
+        if (!resolved) {
+          resolved = true;
+          document.removeEventListener('visibilitychange', onVisibility);
+          resolve(appOpened ? 'found' : 'missing');
+        }
+      }, 2000);
+    });
+  }
+
+  // ── Check a single app ────────────────────────────────────────────────────
+  async function checkSingle(id) {
+    const app = APPS.find(a => a.id === id);
+    if (!app) return;
+    if (state[id] === 'checking') return;
+
+    setState(id, 'checking');
+
+    const result = await detectApp(app);
+    setState(id, result);
+    updateSummary();
+  }
+
+  // ── Check all (sequential to avoid chaos) ────────────────────────────────
+  async function checkAll() {
+    if (isCheckingAll) return;
+    isCheckingAll = true;
+    resetAll();
+
+    for (const app of APPS) {
+      await checkSingle(app.id);
+      await sleep(300); // small gap between checks
+    }
+    isCheckingAll = false;
+  }
+
+  // ── Reset ─────────────────────────────────────────────────────────────────
+  function resetAll() {
+    APPS.forEach(app => setState(app.id, 'idle'));
+    updateSummary();
+  }
+
+  // ── Open app ──────────────────────────────────────────────────────────────
+  function openApp(id) {
+    const app = APPS.find(a => a.id === id);
+    if (!app) return;
+    window.location.href = app.scheme;
+    // Fallback to store after 2s if app didn't open
+    setTimeout(() => {
+      if (!document.hidden) window.open(app.storeUrl, '_blank');
+    }, 2000);
+  }
+
+  // ── setState ──────────────────────────────────────────────────────────────
+  function setState(id, status) {
+    state[id] = status;
+    const card    = document.getElementById(`card-${id}`);
+    const pill    = document.getElementById(`pill-${id}`);
+    const checkBt = document.getElementById(`checkbtn-${id}`);
+    const openBt  = document.getElementById(`openbtn-${id}`);
+    if (!card) return;
+
+    // Remove all status classes
+    card.classList.remove('detected', 'missing');
+    pill.className = 'status-pill';
+
+    const labels = { idle: 'Idle', checking: 'Checking…', found: '✓ Installed', missing: '✗ Not Found' };
+
+    pill.classList.add(status === 'found' ? 'found' : status === 'missing' ? 'missing' : status === 'checking' ? 'checking' : 'idle');
+    pill.textContent = labels[status] || 'Idle';
+
+    if (status === 'found') {
+      card.classList.add('detected');
+      checkBt.textContent = 'Re-check';
+      openBt.classList.add('visible');
+    } else if (status === 'missing') {
+      card.classList.add('missing');
+      checkBt.textContent = '↗ Go to Store';
+      checkBt.onclick = () => { const a = APPS.find(x=>x.id===id); if(a) window.open(a.storeUrl, '_blank'); };
+      openBt.classList.remove('visible');
+    } else if (status === 'checking') {
+      checkBt.textContent = 'Checking…';
+      checkBt.disabled = true;
+      openBt.classList.remove('visible');
+    } else {
+      checkBt.textContent = 'Check App';
+      checkBt.disabled = false;
+      checkBt.onclick = () => checkSingle(id);
+      openBt.classList.remove('visible');
+    }
+  }
+
+  // ── Summary bar ───────────────────────────────────────────────────────────
+  function updateSummary() {
+    const values = Object.values(state);
+    const checked = values.filter(v => v === 'found' || v === 'missing').length;
+    const found   = values.filter(v => v === 'found').length;
+    const absent  = values.filter(v => v === 'missing').length;
+
+    document.getElementById('s-total').textContent = checked;
+    document.getElementById('s-found').textContent = found;
+    document.getElementById('s-absent').textContent = absent;
+
+    document.getElementById('summary').style.display = checked > 0 ? 'flex' : 'none';
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+  // ── Init ──────────────────────────────────────────────────────────────────
+  APPS.forEach(app => state[app.id] = 'idle');
+  renderGrid();
+</script>
+</body>
+</html>
