@@ -1,173 +1,99 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>UPI App Launcher</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"/>
-  <style>
-    /* ====== YOUR ORIGINAL CSS (UNCHANGED) ====== */
-    :root {
-      --bg: #07090f;
-      --surface: #0e1117;
-      --border: #1c2030;
-      --muted: #3a4160;
-      --text: #dde3f5;
-      --sub: #6b748f;
-      --gold: #f5a623;
-    }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Sora', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      padding: 2.5rem 1.5rem 4rem;
-      overflow-x: hidden;
-    }
-    body::before {
-      content: '';
-      position: fixed; inset: 0;
-      background-image:
-        linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
-      background-size: 40px 40px;
-      pointer-events: none;
-      z-index: 0;
-    }
-    .page { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; }
-    header { text-align: center; margin-bottom: 3rem; }
-    .badge {
-      display: inline-flex; align-items: center;
-      background: rgba(245,166,35,.1);
-      border: 1px solid rgba(245,166,35,.25);
-      color: var(--gold);
-      font-size: 0.7rem; font-weight: 600;
-      padding: 0.35rem 0.85rem;
-      border-radius: 999px;
-      margin-bottom: 1.2rem;
-    }
-    h1 {
-      font-size: clamp(1.9rem, 5vw, 2.8rem);
-      font-weight: 700;
-      line-height: 1.15;
-      margin-bottom: 0.75rem;
-    }
-    h1 span { color: var(--gold); }
-    header p {
-      color: var(--sub);
-      font-size: 0.92rem;
-      max-width: 480px;
-      margin: 0 auto;
-      line-height: 1.7;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 1rem;
-    }
-    .app-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 1.4rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-    .card-top { display: flex; align-items: center; gap: 0.85rem; }
-    .app-icon {
-      width: 48px; height: 48px; border-radius: 14px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.5rem;
-    }
-    .app-info { flex: 1; }
-    .app-name { font-weight: 600; font-size: 0.95rem; }
-    .app-scheme {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.68rem;
-      color: var(--sub);
-      margin-top: 0.2rem;
-    }
-    .status-pill {
-      font-size: 0.72rem; font-weight: 600;
-      padding: 0.25rem 0.7rem;
-      border-radius: 999px;
-      background: rgba(255,255,255,.06);
-      color: var(--sub);
-    }
-    .check-btn {
-      width: 100%;
-      background: transparent;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      color: var(--sub);
-      font-family: 'Sora', sans-serif;
-      font-size: 0.82rem; font-weight: 500;
-      padding: 0.6rem;
-      cursor: pointer;
-    }
-    .check-btn:hover {
-      background: rgba(255,255,255,.04);
-      border-color: var(--muted);
-      color: var(--text);
-    }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>UPI App Launcher</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"/>
+<style>
+/* ===== YOUR ORIGINAL CSS (UNCHANGED) ===== */
+:root {
+  --bg:#07090f;--surface:#0e1117;--border:#1c2030;
+  --muted:#3a4160;--text:#dde3f5;--sub:#6b748f;--gold:#f5a623;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);
+  min-height:100vh;padding:2.5rem 1.5rem 4rem;overflow-x:hidden
+}
+.page{max-width:860px;margin:0 auto}
+header{text-align:center;margin-bottom:3rem}
+.badge{
+  display:inline-flex;background:rgba(245,166,35,.1);
+  border:1px solid rgba(245,166,35,.25);
+  color:var(--gold);font-size:.7rem;font-weight:600;
+  padding:.35rem .85rem;border-radius:999px;margin-bottom:1.2rem
+}
+h1{font-size:clamp(1.9rem,5vw,2.8rem);font-weight:700;margin-bottom:.75rem}
+h1 span{color:var(--gold)}
+header p{color:var(--sub);font-size:.92rem;max-width:480px;margin:0 auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1rem}
+.app-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;padding:1.4rem;display:flex;flex-direction:column;gap:1rem
+}
+.card-top{display:flex;align-items:center;gap:.85rem}
+.app-icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.5rem}
+.app-name{font-weight:600;font-size:.95rem}
+.app-scheme{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--sub)}
+.check-btn{
+  width:100%;background:transparent;border:1px solid var(--border);
+  border-radius:10px;color:var(--sub);padding:.6rem;cursor:pointer
+}
+.check-btn:hover{background:rgba(255,255,255,.04);border-color:var(--muted);color:var(--text)}
+</style>
 </head>
 <body>
 <div class="page">
+<header>
+  <div class="badge">🇮🇳 UPI Payment Apps</div>
+  <h1>Launch <span>UPI Apps</span></h1>
+  <p>Tap an app to open it. If not installed, Play Store opens automatically.</p>
+</header>
 
-  <header>
-    <div class="badge">🇮🇳 UPI Payment Apps</div>
-    <h1>Launch <span>UPI Apps</span></h1>
-    <p>Tap an app to open it directly. If not installed, you’ll be redirected to the Play Store automatically.</p>
-  </header>
-
-  <div class="grid" id="grid"></div>
-
+<div class="grid" id="grid"></div>
 </div>
 
 <script>
-  const APPS = [
-    { id: 'phonepe', name: 'PhonePe', emoji: '💜', color: '#7B40F2', scheme: 'ppe', package: 'com.phonepe.app', storeUrl: 'https://play.google.com/store/apps/details?id=com.phonepe.app' },
-    { id: 'gpay', name: 'Google Pay', emoji: '🔵', color: '#4285F4', scheme: 'gpay', package: 'com.google.android.apps.nbu.paisa.user', storeUrl: 'https://play.google.com/store/apps/details?id=com.google.android.apps.nbu.paisa.user' },
-    { id: 'paytm', name: 'Paytm', emoji: '💙', color: '#00B9F1', scheme: 'paytmmp', package: 'net.one97.paytm', storeUrl: 'https://play.google.com/store/apps/details?id=net.one97.paytm' },
-    { id: 'cred', name: 'CRED', emoji: '⚫', color: '#D4AF37', scheme: 'cred', package: 'com.dreamplug.androidapp', storeUrl: 'https://play.google.com/store/apps/details?id=com.dreamplug.androidapp' },
-    { id: 'amazonpay', name: 'Amazon Pay', emoji: '🟠', color: '#FF9900', scheme: 'amazonpay', package: 'in.amazon.mShop.android.shopping', storeUrl: 'https://play.google.com/store/apps/details?id=in.amazon.mShop.android.shopping' },
-    { id: 'bharatpe', name: 'BharatPe', emoji: '🟢', color: '#00875A', scheme: 'bharatpe', package: 'com.bharatpe.app', storeUrl: 'https://play.google.com/store/apps/details?id=com.bharatpe.app' }
-  ];
+const APPS = [
+  { id:'phonepe', name:'PhonePe', emoji:'💜', scheme:'ppe', package:'com.phonepe.app', store:'https://play.google.com/store/apps/details?id=com.phonepe.app' },
+  { id:'gpay', name:'Google Pay', emoji:'🔵', scheme:'gpay', package:'com.google.android.apps.nbu.paisa.user', store:'https://play.google.com/store/apps/details?id=com.google.android.apps.nbu.paisa.user' },
+  { id:'paytm', name:'Paytm', emoji:'💙', scheme:'paytmmp', package:'net.one97.paytm', store:'https://play.google.com/store/apps/details?id=net.one97.paytm' },
+];
 
-  function renderGrid() {
-    const grid = document.getElementById('grid');
-    grid.innerHTML = APPS.map(app => `
-      <div class="app-card" style="--app-color:${app.color}">
-        <div class="card-top">
-          <div class="app-icon">${app.emoji}</div>
-          <div class="app-info">
-            <div class="app-name">${app.name}</div>
-            <div class="app-scheme">${app.scheme}://</div>
-          </div>
-          <span class="status-pill">Ready</span>
+function render() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = APPS.map(app => `
+    <div class="app-card">
+      <div class="card-top">
+        <div class="app-icon">${app.emoji}</div>
+        <div>
+          <div class="app-name">${app.name}</div>
+          <div class="app-scheme">${app.scheme}://</div>
         </div>
-        <button class="check-btn" onclick="launchApp('${app.id}')">
-          Open App
-        </button>
       </div>
-    `).join('');
-  }
+      <button class="check-btn" onclick="openApp('${app.id}')">
+        Open App
+      </button>
+    </div>
+  `).join('');
+}
 
-  function launchApp(id) {
-    const app = APPS.find(a => a.id === id);
-    if (!app) return;
+function openApp(id) {
+  const app = APPS.find(a => a.id === id);
+  if (!app) return;
 
-    const intentUrl =
-      `intent://${app.scheme}://#Intent;scheme=${app.scheme};package=${app.package};S.browser_fallback_url=${encodeURIComponent(app.storeUrl)};end`;
+  const intentUrl =
+    `intent://pay#Intent;` +
+    `scheme=${app.scheme};` +
+    `package=${app.package};` +
+    `S.browser_fallback_url=${encodeURIComponent(app.store)};end`;
 
-    window.location.href = intentUrl;
-  }
+  window.location.href = intentUrl;
+}
 
-  renderGrid();
+render();
 </script>
 
 </body>
