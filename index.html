@@ -6,52 +6,149 @@
 <title>UPI App Launcher</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"/>
+
 <style>
-/* ===== YOUR CSS UNCHANGED ===== */
+/* ===== YOUR ORIGINAL CSS (UNCHANGED) ===== */
 :root {
   --bg:#07090f;--surface:#0e1117;--border:#1c2030;
   --muted:#3a4160;--text:#dde3f5;--sub:#6b748f;--gold:#f5a623;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:2.5rem 1.5rem 4rem}
+body{
+  font-family:'Sora',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  padding:2.5rem 1.5rem 4rem;
+}
 .page{max-width:860px;margin:0 auto}
 header{text-align:center;margin-bottom:3rem}
-.badge{display:inline-flex;background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.25);color:var(--gold);font-size:.7rem;font-weight:600;padding:.35rem .85rem;border-radius:999px;margin-bottom:1.2rem}
+.badge{
+  display:inline-flex;
+  background:rgba(245,166,35,.1);
+  border:1px solid rgba(245,166,35,.25);
+  color:var(--gold);
+  font-size:.7rem;
+  font-weight:600;
+  padding:.35rem .85rem;
+  border-radius:999px;
+  margin-bottom:1.2rem
+}
 h1{font-size:clamp(1.9rem,5vw,2.8rem);font-weight:700;margin-bottom:.75rem}
 h1 span{color:var(--gold)}
 header p{color:var(--sub);font-size:.92rem;max-width:480px;margin:0 auto}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1rem}
-.app-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.4rem;display:flex;flex-direction:column;gap:1rem}
+.app-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:1.4rem;
+  display:flex;
+  flex-direction:column;
+  gap:1rem
+}
 .card-top{display:flex;align-items:center;gap:.85rem}
-.app-icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.5rem}
+.app-icon{
+  width:48px;height:48px;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.5rem
+}
 .app-name{font-weight:600;font-size:.95rem}
-.check-btn{width:100%;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--sub);padding:.6rem;cursor:pointer}
-.check-btn:hover{background:rgba(255,255,255,.04);border-color:var(--muted);color:var(--text)}
+.check-btn{
+  width:100%;
+  background:transparent;
+  border:1px solid var(--border);
+  border-radius:10px;
+  color:var(--sub);
+  padding:.6rem;
+  cursor:pointer
+}
+.check-btn:hover{
+  background:rgba(255,255,255,.04);
+  border-color:var(--muted);
+  color:var(--text)
+}
 </style>
 </head>
+
 <body>
 <div class="page">
+
 <header>
   <div class="badge">🇮🇳 UPI Apps</div>
   <h1>Launch <span>UPI Payment</span></h1>
-  <p>Tap to open your installed UPI app. Works on Android Chrome.</p>
+  <p>Works on Android & iOS. Opens selected UPI app directly.</p>
 </header>
 
 <div class="grid" id="grid"></div>
+
 </div>
 
 <script>
-const UPI_LINK =
-  "upi://pay?pa=test@upi&pn=Test%20User&am=1&cu=INR&tn=Test%20Payment";
+/* ===== Dummy Payment Data ===== */
+const PAYMENT_DATA = {
+  pa: "demo@upi",
+  pn: "Demo Merchant",
+  am: "10.00",
+  cu: "INR",
+  tn: "Test Payment",
+  tr: "TXN12345678",
+  tid: "TID12345678"
+};
 
+/* ===== UPI Query Builder ===== */
+function buildUPIQuery() {
+  const p = PAYMENT_DATA;
+  return `upi/pay?pa=${encodeURIComponent(p.pa)}&pn=${encodeURIComponent(p.pn)}&tr=${p.tr}&tid=${p.tid}&am=${p.am}&cu=${p.cu}&tn=${encodeURIComponent(p.tn)}`;
+}
+
+/* ===== App Config ===== */
 const APPS = [
-  { id:'gpay', name:'Google Pay', emoji:'🔵', package:'com.google.android.apps.nbu.paisa.user' },
-  { id:'phonepe', name:'PhonePe', emoji:'💜', package:'com.phonepe.app' },
-  { id:'paytm', name:'Paytm', emoji:'💙', package:'net.one97.paytm' }
+  {
+    id: "gpay",
+    name: "Google Pay",
+    emoji: "🔵",
+    iosScheme: "gpay://",
+    androidPackage: "com.google.android.apps.nbu.paisa.user",
+    store: "https://play.google.com/store/apps/details?id=com.google.android.apps.nbu.paisa.user"
+  },
+  {
+    id: "phonepe",
+    name: "PhonePe",
+    emoji: "💜",
+    iosScheme: "phonepe://",
+    androidPackage: "com.phonepe.app",
+    store: "https://play.google.com/store/apps/details?id=com.phonepe.app"
+  },
+  {
+    id: "paytm",
+    name: "Paytm",
+    emoji: "💙",
+    iosScheme: "paytm://",
+    androidPackage: "net.one97.paytm",
+    store: "https://play.google.com/store/apps/details?id=net.one97.paytm"
+  },
+  {
+    id: "bhim",
+    name: "BHIM",
+    emoji: "🟢",
+    iosScheme: "bhim://",
+    androidPackage: "in.org.npci.upiapp",
+    store: "https://play.google.com/store/apps/details?id=in.org.npci.upiapp"
+  }
 ];
 
+/* ===== Platform Detection ===== */
+function isAndroid() {
+  return /Android/i.test(navigator.userAgent);
+}
+function isIOS() {
+  return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
+/* ===== Render UI ===== */
 function render() {
-  const grid = document.getElementById('grid');
+  const grid = document.getElementById("grid");
   grid.innerHTML = APPS.map(app => `
     <div class="app-card">
       <div class="card-top">
@@ -59,22 +156,35 @@ function render() {
         <div class="app-name">${app.name}</div>
       </div>
       <button class="check-btn" onclick="openApp('${app.id}')">
-        Pay ₹1
+        Pay ₹10
       </button>
     </div>
-  `).join('');
+  `).join("");
 }
 
+/* ===== Open App Logic ===== */
 function openApp(id) {
   const app = APPS.find(a => a.id === id);
   if (!app) return;
 
-  const intentUrl =
-    `intent://${UPI_LINK.replace("upi://","")}#Intent;` +
-    `scheme=upi;` +
-    `package=${app.package};end`;
+  const upiPath = buildUPIQuery();
 
-  window.location.href = intentUrl;
+  if (isAndroid()) {
+    const intentUrl =
+      `intent://${upiPath}#Intent;` +
+      `scheme=upi;` +
+      `package=${app.androidPackage};` +
+      `S.browser_fallback_url=${encodeURIComponent(app.store)};end`;
+
+    window.location.href = intentUrl;
+  }
+  else if (isIOS()) {
+    const iosUrl = app.iosScheme + upiPath;
+    window.location.href = iosUrl;
+  }
+  else {
+    alert("UPI deep linking works only on mobile devices.");
+  }
 }
 
 render();
